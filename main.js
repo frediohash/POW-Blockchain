@@ -6,15 +6,24 @@ class Block{
         this.data = data;
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
+        this.nonce = 0;
     }
     calculateHash(){
-        return SHA256(this.index + this.timestamp + this.previousHash + JSON.stringify(this.data)).toString();
+        return SHA256(this.index + this.timestamp + this.previousHash + JSON.stringify(this.data) + this.nonce).toString();
+    }
+    mineBlock(difficulty){
+        while(this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")){
+            this.nonce++;
+            this.hash = this.calculateHash();
+        }
+        console.log("Block mined" + this.hash);
     }
 }
 
 class Blockchain{
     constructor(){
         this.chain = [this.createGenesisBlock()];
+        this.difficulty = 2;
     }
     createGenesisBlock(){
         return new Block(0, "01/06/2021", "Genesis Block", "0");
@@ -24,7 +33,7 @@ class Blockchain{
     }
     addBlock(newBlock){
         newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(this.difficulty);
         this.chain.push(newBlock);
     }
     isChainValid(){
@@ -43,16 +52,15 @@ class Blockchain{
 }
 
 let fredio = new Blockchain();
+
+console.log("Mining Block 1...");
 fredio.addBlock(new Block(1, "02/06/2021", {amount: 1000}));
+
+console.log("Mining Block 2...");
 fredio.addBlock(new Block(2, "03/06/2021", {amount: 2000}));
 
-console.log(JSON.stringify(fredio, null, 4));
 
-console.log("Status Block " + fredio.isChainValid());
 
-fredio.chain[1].data = {amount : 100};
-
-console.log("Status Block " + fredio.isChainValid());
 
 
 
